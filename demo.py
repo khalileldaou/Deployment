@@ -40,6 +40,24 @@ def stem(tokens):
     stemmer = PorterStemmer()
     return [stemmer.stem(t) for t in tokens]
 
+# Map labels to their label names
+labels_name = {
+    0: 'admiration',
+    1: 'confusion/curiosity',
+    2: 'realisation/surprise',
+    3: 'sadness/grief',
+    4: 'approval/pride',
+    5: 'fear/nervousness/embarrassment',
+    6: 'gratitude/relief',
+    7: 'joy/amusement',
+    8: 'remorse/disappointment',
+    9: 'desire/excitement/optimism',
+    10: 'disgust/disapproval',
+    11: 'anger/annoyance',
+    12: 'love/caring',    
+    13: 'neutral'}
+
+
 while(True):
     user_text_input = input("Enter Text: ")
 
@@ -55,4 +73,6 @@ while(True):
 
     # run model
     text_prediction = model.predict(vectorized_text)
-    print(text_prediction)
+    print(text_prediction, labels_name[text_prediction[0]])
+
+    
