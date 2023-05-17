@@ -11,6 +11,7 @@ vectorizer = load('./savedmodel/tfidf_vectorizer.joblib')
 print(vectorizer)
 model = load('./savedmodel/xgboost_model.joblib')
 print(model)
+print("Hellp from anna!!!!")
 
 # Download the required NLTK data
 nltk.download('punkt')
