@@ -5,7 +5,8 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 import re
-
+from datetime import datetime
+import csv
 
 vectorizer = load('./savedmodel/tfidf_vectorizer.joblib')
 print(vectorizer)
@@ -39,6 +40,13 @@ def remove_stopwords(tokens):
 def stem(tokens):
     stemmer = PorterStemmer()
     return [stemmer.stem(t) for t in tokens]
+
+def updateCSV(dict_object, file_name):
+    # Write the dictionary to the CSV file
+    columns = ['input', 'prediction', 'date-time']
+    with open(file_name, 'a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=columns)
+        writer.writerow(dict_object)
 
 # Map labels to their label names
 labels_name = {
@@ -75,4 +83,10 @@ while(True):
     text_prediction = model.predict(vectorized_text)
     print(text_prediction, labels_name[text_prediction[0]])
 
-    
+    # capture time and date dd/mm/YY H:M:S
+    date_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    print("date-time =", date_time)
+
+    # monitor: save input, prediction, and time-date in a json file
+    monitor_file = {'input': user_text_input, 'prediction': labels_name[text_prediction[0]], 'date-time': date_time}
+    updateCSV(monitor_file, 'monitor.csv')
