@@ -1,7 +1,6 @@
 Flask==2.0.3
 pytest==7.1.3
 matplotlib
-sklearn
 numpy
 scipy
 pandas
@@ -9,7 +8,6 @@ joblib
 nltk
 seaborn
 spacy
-datasets
 scipy
 scikit-learn
 xgboost

@@ -1,13 +1,15 @@
 from flask import Flask, render_template, request
 from joblib import load
 import numpy as np
-from demo import text_preprocessing_pipeline, updateCSV
+from savedmodels.demo import text_preprocessing_pipeline, updateCSV
 from datetime import datetime
 
 app = Flask(__name__)
 
-vectorizer = load('./savedmodel/tfidf_vectorizer.joblib')
-model = load('./savedmodel/xgboost_model.joblib')
+vectorizer = load('./savedmodels/tfidf_vectorizer.joblib')
+print(vectorizer)
+model = load('./savedmodels/xgboost_model.joblib')
+print(model)
 
 str_label = {
     0: 'neutral',
@@ -73,4 +75,6 @@ def predictor():
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=8080, debug=True)
+    # app.run(host='127.0.0.1', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=8080) # to access from outside of docker 
+

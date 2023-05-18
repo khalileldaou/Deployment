@@ -8,10 +8,10 @@ import re
 from datetime import datetime
 import csv
 
-vectorizer = load('./savedmodel/tfidf_vectorizer.joblib')
-print(vectorizer)
-model = load('./savedmodel/xgboost_model.joblib')
-print(model)
+# vectorizer = load('./savedmodel/tfidf_vectorizer.joblib')
+# print(vectorizer)
+# model = load('./savedmodel/xgboost_model.joblib')
+# print(model)
 
 # Download the required NLTK data
 nltk.download('punkt')
