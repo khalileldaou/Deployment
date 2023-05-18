@@ -19,13 +19,13 @@
 
         {% if text_pred %}
             <h2>Classification Result:</h2>
-            <p>The text has been classified as {{ text_pred }}</p>
+            <p>{{ text_pred }}</p>
 
             {% if top_preds %}
                 <h3>Top Predictions:</h3>
                 <ul>
                     {% for pred in top_preds %}
-                        <li>{{ pred[0] }} - {{ pred[1]*100 }}%</li>
+                        <li>{{ pred[0] }} - {{ '%.2f' | format(pred[1]*100) }}%</li>
                     {% endfor %}
                 </ul>
             {% endif %}
