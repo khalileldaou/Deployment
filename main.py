@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 from joblib import load
+import json
 import numpy as np
 from demo import text_preprocessing_pipeline, updateCSV
 from datetime import datetime
@@ -35,42 +36,60 @@ def home():
 def predictor():
     if request.method == 'POST':
         # User enter text
-        user_text_input = request.form['text']
+        
+        if request.is_json:
+            sentence = request.get_json()['sentence']
+            processed_text = text_preprocessing_pipeline(sentence)
+            processed_text_str = ' '.join(processed_text)
+            
+            # vectorizer text
+            vectorized_text = vectorizer.transform([processed_text_str])
 
-        # preprocess text: tokenize, stemm, remove emojis, and stopwords
-        processed_text = text_preprocessing_pipeline(user_text_input)
-        processed_text_str = ' '.join(processed_text)
+            # predict text using model
+            text_prediction = model.predict(vectorized_text)
+            text_prediction = int(text_prediction)
 
-        # vectorizer text
-        vectorized_text = vectorizer.transform([processed_text_str])
+            # map label to its name
+            pred_text = str_label[text_prediction]
 
-        # predict text using model
-        text_prediction = model.predict(vectorized_text)
-        text_prediction = int(text_prediction)
+            prediction = {'prediction': pred_text}
+            return json.dumps(prediction)
 
-        # map label to its name
-        pred_text = str_label[text_prediction]
+        else:
+            user_text_input = request.form['text']
+            # preprocess text: tokenize, stemm, remove emojis, and stopwords
+            processed_text = text_preprocessing_pipeline(user_text_input)
+            processed_text_str = ' '.join(processed_text)
 
-        # calculate probabilty of predicted label
-        probs = model.predict_proba(vectorized_text)[0]
+            # vectorizer text
+            vectorized_text = vectorizer.transform([processed_text_str])
 
-        # calculate probabilty of all other top labels
-        top_probs = probs.argsort()[-10:][::-1]
-        top_labels = [str_label[label] for label in top_probs]
-        top_percents = [probs[label] for label in top_probs]
-        top_preds = list(zip(top_labels, top_percents))
+            # predict text using model
+            text_prediction = model.predict(vectorized_text)
+            text_prediction = int(text_prediction)
 
-        date_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            # map label to its name
+            pred_text = str_label[text_prediction]
 
-        monitor_file = {'input': user_text_input,
-                        'prediction': str_label[text_prediction],
-                        'date-time': date_time
-                        }
-        updateCSV(monitor_file, 'monitor.csv')
+            # calculate probabilty of predicted label
+            probs = model.predict_proba(vectorized_text)[0]
 
-    return render_template("index.html", text_pred="The text has been classified as {}".format(pred_text),
-                           top_preds=top_preds)
+            # calculate probabilty of all other top labels
+            top_probs = probs.argsort()[-10:][::-1]
+            top_labels = [str_label[label] for label in top_probs]
+            top_percents = [probs[label] for label in top_probs]
+            top_preds = list(zip(top_labels, top_percents))
 
+            date_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+            monitor_file = {'input': user_text_input,
+                            'prediction': str_label[text_prediction],
+                            'date-time': date_time
+                            }
+            updateCSV(monitor_file, 'monitor.csv')
+
+            return render_template("index.html", text_pred="The text has been classified as {}".format(pred_text),
+                          top_preds=top_preds)
 
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=8080, debug=True)

@@ -2,6 +2,8 @@ Flask==2.0.3
 pytest==7.1.3
 matplotlib
 sklearn
+json
+requests
 numpy
 scipy
 pandas
