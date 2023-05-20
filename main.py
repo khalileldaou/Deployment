@@ -35,6 +35,19 @@ MONGODB_URI = 'mongodb+srv://humzamalikramzan:W06dI5K1TnjIb9Jf@nlp.cvp3aqy.mongo
 DB_NAME = 'deployment_DB'
 COLLECTION_NAME = 'monitor'
 
+def read_data_from_mongodb():
+    client = MongoClient(MONGODB_URI)
+    db = client.get_database(DB_NAME)
+    collection = db[COLLECTION_NAME]
+    
+    data = collection.find()
+    result = []
+    for document in data:
+        result.append(document)
+    
+    client.close()
+    return result
+
 # def updateCSV(dict_object, file_name):
 #     # Get the absolute path of the file
 #     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -49,7 +62,8 @@ COLLECTION_NAME = 'monitor'
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    data = read_data_from_mongodb()
+    return render_template('index.html', data=data)
 
 
 @app.route('/predict', methods=['POST'])
@@ -90,12 +104,15 @@ def predictor():
         data = {
             'input': user_text_input,
             'prediction': pred_text,
-            'date-time': date_time
+            'date_time': date_time
         }
         collection.insert_one(data)
 
+        updated_data = read_data_from_mongodb()
+        client.close()
+
     return render_template("index.html", text_pred="The text has been classified as {}".format(pred_text),
-                           top_preds=top_preds)
+                           top_preds=top_preds, data=updated_data)
 
 
 if __name__ == "__main__":

@@ -30,5 +30,20 @@
                 </ul>
             {% endif %}
         {% endif %}
+
+        <table>
+            <tr>
+              <th>Input</th>
+              <th>Prediction</th>
+              <th>Date-Time</th>
+            </tr>
+            {% for entry in data %}
+            <tr>
+              <td>{{ entry.input }}</td>
+              <td>{{ entry.prediction }}</td>
+              <td>{{ entry.date_time }}</td>
+            </tr>
+            {% endfor %}
+          </table>
     </body>
 </html>
