@@ -6,44 +6,66 @@
         <title>Go_Emotions Model Deployment</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="">
+        <style>
+            body{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            ul {
+                list-style-type: none;
+            }
+
+            table {
+                border: 1px solid black;
+                color: black;
+            }
+
+            th {
+                background-color: rgb(255, 210, 30);
+                color: black;
+            }
+
+            td {
+                padding: 5px;
+                background-color: white;
+            }            
+        </style>
     </head>
     <body>
-        <h1>Enter a text for prediction</h1>
-        <form action="{{ url_for('predictor')}}"method="post">
-
-            <input type='text' name='text' placeholer='Enter Text' required='required'/>
-            <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
-
+        <h1 align="center">Enter a text for prediction</h1>
+        <form align="center" action="{{ url_for('predictor')}}" method="post">
+            <input type='text' name='text' placeholder='Enter Text' required='required'/>
+            <button type="submit" class="btn btn-primary btn-block btn-large" style="background-color:rgb(255, 210, 30)">Predict</button>
         </form>
-
+        
         {% if text_pred %}
-            <h2>Classification Result:</h2>
-            <p>{{ text_pred }}</p>
-
-            {% if top_preds %}
-                <h3>Top Predictions:</h3>
-                <ul>
-                    {% for pred in top_preds %}
-                        <li>{{ pred[0] }} - {{ '%.2f' | format(pred[1]*100) }}%</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+            <div align="center">
+                <h2>Classification Result:</h2>
+                <p>{{ text_pred }}</p>
+                
+                {% if top_preds %}
+                    <h3>Top Predictions:</h3>
+                    <ul>
+                        {% for pred in top_preds %}
+                            <li>{{ pred[0] }} - {{ '%.2f' | format(pred[1]*100) }}%</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
         {% endif %}
-
-        <table>
+        
+        <table align="center">
             <tr>
-              <th>Input</th>
-              <th>Prediction</th>
-              <th>Date-Time</th>
+                <th>Input</th>
+                <th>Prediction</th>
+                <th>Date-Time</th>
             </tr>
             {% for entry in data %}
-            <tr>
-              <td>{{ entry.input }}</td>
-              <td>{{ entry.prediction }}</td>
-              <td>{{ entry.date_time }}</td>
-            </tr>
+                <tr>
+                    <td>{{ entry.input }}</td>
+                    <td>{{ entry.prediction }}</td>
+                    <td>{{ entry.date_time }}</td>
+                </tr>
             {% endfor %}
-          </table>
+        </table>
     </body>
 </html>
