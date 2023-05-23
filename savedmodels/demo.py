@@ -8,10 +8,10 @@ import re
 from datetime import datetime
 import csv
 
-vectorizer = load('./savedmodel/tfidf_vectorizer.joblib')
-print(vectorizer)
-model = load('./savedmodel/xgboost_model.joblib')
-print(model)
+# vectorizer = load('./savedmodel/tfidf_vectorizer.joblib')
+# print(vectorizer)
+# model = load('./savedmodel/xgboost_model.joblib')
+# print(model)
 
 # Download the required NLTK data
 nltk.download('punkt')
@@ -56,12 +56,12 @@ def text_preprocessing_pipeline(text):
 
 
 #
-def updateCSV(dict_object, file_name):
-    # Write the dictionary to the CSV file
-    columns = ['input', 'prediction', 'date-time']
-    with open(file_name, 'a', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=columns)
-        writer.writerow(dict_object)
+# def updateCSV(dict_object, file_name):
+#     # Write the dictionary to the CSV file
+#     columns = ['input', 'prediction', 'date-time']
+#     with open(file_name, 'a', newline='') as file:
+#         writer = csv.DictWriter(file, fieldnames=columns)
+#         writer.writerow(dict_object)
 #
 #
 # # Map labels to their label names
