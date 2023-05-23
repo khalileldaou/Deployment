@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 from joblib import load
+import json
 import numpy as np
 from savedmodels.demo import text_preprocessing_pipeline
 from datetime import datetime
@@ -70,49 +71,69 @@ def home():
 def predictor():
     if request.method == 'POST':
         # User enter text
-        user_text_input = request.form['text']
 
-        # preprocess text: tokenize, stemm, remove emojis, and stopwords
-        processed_text = text_preprocessing_pipeline(user_text_input)
-        processed_text_str = ' '.join(processed_text)
+        if request.is_json:
+            sentence = request.get_json()['sentence']
+            processed_text = text_preprocessing_pipeline(sentence)
+            processed_text_str = ' '.join(processed_text)
+            
+            # vectorizer text
+            vectorized_text = vectorizer.transform([processed_text_str])
 
-        # vectorizer text
-        vectorized_text = vectorizer.transform([processed_text_str])
+            # predict text using model
+            text_prediction = model.predict(vectorized_text)
+            text_prediction = int(text_prediction)
 
-        # predict text using model
-        text_prediction = model.predict(vectorized_text)
-        text_prediction = int(text_prediction)
+            # map label to its name
+            pred_text = str_label[text_prediction]
 
-        # map label to its name
-        pred_text = str_label[text_prediction]
+            prediction = {'prediction': pred_text}
+            return json.dumps(prediction)
+        
+        else: 
+            user_text_input = request.form['text']
 
-        # calculate probabilty of predicted label
-        probs = model.predict_proba(vectorized_text)[0]
+            # preprocess text: tokenize, stemm, remove emojis, and stopwords
+            processed_text = text_preprocessing_pipeline(user_text_input)
+            processed_text_str = ' '.join(processed_text)
 
-        # calculate probabilty of all other top labels
-        top_probs = probs.argsort()[-10:][::-1]
-        top_labels = [str_label[label] for label in top_probs]
-        top_percents = [probs[label] for label in top_probs]
-        top_preds = list(zip(top_labels, top_percents))
+            # vectorizer text
+            vectorized_text = vectorizer.transform([processed_text_str])
 
-        date_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            # predict text using model
+            text_prediction = model.predict(vectorized_text)
+            text_prediction = int(text_prediction)
 
-        client = MongoClient(MONGODB_URI)
-        db = client.get_database(DB_NAME)
-        collection = db[COLLECTION_NAME]
+            # map label to its name
+            pred_text = str_label[text_prediction]
 
-        data = {
-            'input': user_text_input,
-            'prediction': pred_text,
-            'date_time': date_time
-        }
-        collection.insert_one(data)
+            # calculate probabilty of predicted label
+            probs = model.predict_proba(vectorized_text)[0]
 
-        updated_data = read_data_from_mongodb()
-        client.close()
+            # calculate probabilty of all other top labels
+            top_probs = probs.argsort()[-10:][::-1]
+            top_labels = [str_label[label] for label in top_probs]
+            top_percents = [probs[label] for label in top_probs]
+            top_preds = list(zip(top_labels, top_percents))
 
-    return render_template("index.html", text_pred="The text has been classified as {}".format(pred_text),
-                           top_preds=top_preds, data=updated_data)
+            date_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+            client = MongoClient(MONGODB_URI)
+            db = client.get_database(DB_NAME)
+            collection = db[COLLECTION_NAME]
+
+            data = {
+                'input': user_text_input,
+                'prediction': pred_text,
+                'date_time': date_time
+            }
+            collection.insert_one(data)
+
+            updated_data = read_data_from_mongodb()
+            client.close()
+
+            return render_template("index.html", text_pred="The text has been classified as {}".format(pred_text),
+                                top_preds=top_preds, data=updated_data)
 
 
 if __name__ == "__main__":
