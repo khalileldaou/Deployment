@@ -1,8 +1,11 @@
 from flask import Flask, render_template, request
 from joblib import load
 import numpy as np
-from savedmodels.demo import text_preprocessing_pipeline, updateCSV
+from savedmodels.demo import text_preprocessing_pipeline
 from datetime import datetime
+import csv
+import os
+from pymongo import MongoClient
 
 app = Flask(__name__)
 
@@ -28,9 +31,39 @@ str_label = {
     13: 'love/caring'
 }
 
+MONGODB_URI = 'mongodb+srv://humzamalikramzan:W06dI5K1TnjIb9Jf@nlp.cvp3aqy.mongodb.net/'
+DB_NAME = 'deployment_DB'
+COLLECTION_NAME = 'monitor'
+
+def read_data_from_mongodb():
+    client = MongoClient(MONGODB_URI)
+    db = client.get_database(DB_NAME)
+    collection = db[COLLECTION_NAME]
+    
+    data = collection.find()
+    result = []
+    for document in data:
+        result.append(document)
+    
+    client.close()
+    return result
+
+# def updateCSV(dict_object, file_name):
+#     # Get the absolute path of the file
+#     script_dir = os.path.dirname(os.path.abspath(__file__))
+#     file_path = os.path.join(script_dir, file_name)
+
+#     # Write the dictionary to the CSV file
+#     columns = ['input', 'prediction', 'date-time']
+#     with open(file_path, 'a', newline='') as file:
+#         writer = csv.DictWriter(file, fieldnames=columns)
+#         writer.writerow(dict_object)
+        
+
 @app.route('/')
 def home():
-    return render_template('index.html')
+    data = read_data_from_mongodb()
+    return render_template('index.html', data=data)
 
 
 @app.route('/predict', methods=['POST'])
@@ -64,14 +97,22 @@ def predictor():
 
         date_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-        monitor_file = {'input': user_text_input,
-                        'prediction': str_label[text_prediction],
-                        'date-time': date_time
-                        }
-        updateCSV(monitor_file, 'monitor.csv')
+        client = MongoClient(MONGODB_URI)
+        db = client.get_database(DB_NAME)
+        collection = db[COLLECTION_NAME]
+
+        data = {
+            'input': user_text_input,
+            'prediction': pred_text,
+            'date_time': date_time
+        }
+        collection.insert_one(data)
+
+        updated_data = read_data_from_mongodb()
+        client.close()
 
     return render_template("index.html", text_pred="The text has been classified as {}".format(pred_text),
-                           top_preds=top_preds)
+                           top_preds=top_preds, data=updated_data)
 
 
 if __name__ == "__main__":
