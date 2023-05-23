@@ -1,0 +1,34 @@
+name:  workflow
+
+on: [push]
+
+jobs:
+  build:
+
+  runs-on: ubuntu-latest
+  strategy:
+    matrix:
+    python-version: ["3.9"]
+
+  steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install docker-compose -y
+
+    - name: Build and run Docker containers
+      run: docker-compose up -d
+
+    - name: Lint with ruff
+      run: |
+        pip install ruff
+        ruff --format=github --target-version=py37 .
+      continue-on-error: true
